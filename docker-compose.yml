@@ -1,0 +1,19 @@
+services:
+  # The Heart: Home Assistant
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - ./config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host # Allows HA to "see" the lights on your Wi-Fi
+
+  # The Gateway: Cloudflare Tunnel
+  # Replace <TOKEN> with the token from your Cloudflare Dashboard
+  tunnel:
+    container_name: cloudflare-tunnel
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}

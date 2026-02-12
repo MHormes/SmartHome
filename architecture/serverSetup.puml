@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+
+' Setting the diagram to a Left-to-Right layout for better readability
+left to right direction
+
+package "Your Home (Local Network)" #Azure {
+    component [Home Assistant (Docker)] as HA #LightGreen
+    component [LSC / Smart Life Light] as Light #Gold
+    component [Cloudflare Tunnel Container] as CF_Agent #Orange
+
+    node "Wall Screen (Old Phone/Pi)" as Wall #White
+}
+
+cloud "Public Internet" #GhostWhite {
+    component [Cloudflare Edge] as CF_Edge
+    actor "User Phone (Away)" as Phone
+}
+
+' --- Communication Flow ---
+
+' 1. Internal: Wall screen to Server
+Wall -down-> HA : HTTP (Local IP:8123)
+
+' 2. Internal: Server to Light (The core logic)
+HA -right-> Light : AES-Encrypted TCP\n(Local Key)
+
+' 3. External: Phone to Server via Tunnel
+Phone -down-> CF_Edge : HTTPS (your-domain.com)
+CF_Edge <==> CF_Agent : Secure Outbound Tunnel
+CF_Agent -up-> HA : Local Proxy (Port 8123)
+
+@enduml
